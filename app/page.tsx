@@ -1,0 +1,270 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import Header from '@/components/Header';
+import GameBoard from '@/components/GameBoard';
+import Keyboard from '@/components/Keyboard';
+import HelpModal from '@/components/HelpModal';
+import StatsModal from '@/components/StatsModal';
+import SettingsModal from '@/components/SettingsModal';
+import { GameState, GameStatus, Statistics, Settings, FeedbackColor } from '@/types';
+import { getTodaysPuzzle, getPuzzleNumber } from '@/lib/puzzle';
+import { isMathematicallyValid, getValidationError } from '@/lib/validation';
+import {
+  saveGameState,
+  loadGameState,
+  saveStatistics,
+  loadStatistics,
+  saveSettings,
+  loadSettings,
+  isFirstTimeUser,
+  setFirstTimeUserComplete,
+} from '@/lib/storage';
+import {
+  updateStatistics,
+  shouldResetGame,
+  getKeyboardFeedback,
+  generateShareText,
+} from '@/lib/game';
+
+const MAX_GUESSES = 6;
+const MAX_EQUATION_LENGTH = 13;
+
+export default function Home() {
+  const [mounted, setMounted] = useState(false);
+  const [target, setTarget] = useState('');
+  const [puzzleNumber, setPuzzleNumber] = useState(0);
+  const [gameState, setGameState] = useState<GameState>({
+    currentPuzzleNumber: 0,
+    guesses: [],
+    gameStatus: 'IN_PROGRESS',
+    lastPlayed: new Date().toISOString(),
+  });
+  const [currentGuess, setCurrentGuess] = useState('');
+  const [statistics, setStatistics] = useState<Statistics>(loadStatistics());
+  const [settings, setSettings] = useState<Settings>(loadSettings());
+  const [isInvalidGuess, setIsInvalidGuess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Modal states
+  const [showHelp, setShowHelp] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Initialize game on mount
+  useEffect(() => {
+    setMounted(true);
+    const todaysPuzzle = getTodaysPuzzle();
+    const todaysPuzzleNumber = getPuzzleNumber(new Date());
+
+    setTarget(todaysPuzzle);
+    setPuzzleNumber(todaysPuzzleNumber);
+
+    const savedState = loadGameState();
+
+    if (savedState && !shouldResetGame(todaysPuzzleNumber, savedState.currentPuzzleNumber)) {
+      setGameState(savedState);
+    } else {
+      const newState: GameState = {
+        currentPuzzleNumber: todaysPuzzleNumber,
+        guesses: [],
+        gameStatus: 'IN_PROGRESS',
+        lastPlayed: new Date().toISOString(),
+      };
+      setGameState(newState);
+      saveGameState(newState);
+    }
+
+    // Show help modal for first-time users
+    if (isFirstTimeUser()) {
+      setShowHelp(true);
+      setFirstTimeUserComplete();
+    }
+  }, []);
+
+  // Apply theme
+  useEffect(() => {
+    if (mounted) {
+      if (settings.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [settings.theme, mounted]);
+
+  // Handle key press from keyboard
+  const handleKeyPress = useCallback(
+    (key: string) => {
+      if (gameState.gameStatus !== 'IN_PROGRESS') return;
+
+      setErrorMessage(null);
+      setIsInvalidGuess(false);
+
+      if (key === '⌫') {
+        // Backspace
+        setCurrentGuess((prev) => prev.slice(0, -1));
+      } else if (key === '✓') {
+        // Submit
+        if (currentGuess.length === 0) return;
+
+        const error = getValidationError(currentGuess);
+        if (error) {
+          setErrorMessage(error);
+          setIsInvalidGuess(true);
+          setTimeout(() => setIsInvalidGuess(false), 500);
+          return;
+        }
+
+        if (!isMathematicallyValid(currentGuess)) {
+          setErrorMessage('Equation is not correct');
+          setIsInvalidGuess(true);
+          setTimeout(() => setIsInvalidGuess(false), 500);
+          return;
+        }
+
+        // Valid guess - add to guesses
+        const newGuesses = [...gameState.guesses, currentGuess];
+        let newStatus: GameStatus = gameState.gameStatus;
+
+        // Check win condition
+        if (currentGuess === target) {
+          newStatus = 'WON';
+        } else if (newGuesses.length >= MAX_GUESSES) {
+          newStatus = 'LOST';
+        }
+
+        const newState: GameState = {
+          ...gameState,
+          guesses: newGuesses,
+          gameStatus: newStatus,
+          lastPlayed: new Date().toISOString(),
+        };
+
+        setGameState(newState);
+        saveGameState(newState);
+        setCurrentGuess('');
+
+        // Update statistics if game ended
+        if (newStatus !== 'IN_PROGRESS') {
+          const newStats = updateStatistics(statistics, newState, gameState);
+          setStatistics(newStats);
+          saveStatistics(newStats);
+
+          // Show stats modal after a delay
+          setTimeout(() => setShowStats(true), 2000);
+        }
+      } else if (key === '=') {
+        // Add equals sign with spaces
+        if (currentGuess.length < MAX_EQUATION_LENGTH - 4) {
+          setCurrentGuess((prev) => prev + ' = ');
+        }
+      } else {
+        // Add character
+        if (currentGuess.length < MAX_EQUATION_LENGTH) {
+          // Auto-add spaces around operators
+          if (['+', '-', '*', '/'].includes(key)) {
+            const lastChar = currentGuess[currentGuess.length - 1];
+            const prefix = lastChar === ' ' ? '' : ' ';
+            setCurrentGuess((prev) => prev + prefix + key + ' ');
+          } else {
+            setCurrentGuess((prev) => prev + key);
+          }
+        }
+      }
+    },
+    [currentGuess, gameState, target, statistics]
+  );
+
+  // Handle physical keyboard input
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showHelp || showStats || showSettings) return;
+
+      if (e.key === 'Backspace') {
+        handleKeyPress('⌫');
+      } else if (e.key === 'Enter') {
+        handleKeyPress('✓');
+      } else if (/^[0-9+\-*/=]$/.test(e.key)) {
+        handleKeyPress(e.key);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyPress, showHelp, showStats, showSettings]);
+
+  // Handle settings change
+  const handleSettingsChange = (newSettings: Settings) => {
+    setSettings(newSettings);
+    saveSettings(newSettings);
+  };
+
+  // Get keyboard feedback
+  const keyFeedback = getKeyboardFeedback(gameState.guesses, target);
+
+  // Generate share text if game is over
+  const shareText =
+    gameState.gameStatus !== 'IN_PROGRESS'
+      ? generateShareText(puzzleNumber, gameState.guesses, target, gameState.gameStatus)
+      : undefined;
+
+  if (!mounted) {
+    return null; // Prevent hydration mismatch
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark">
+      <Header
+        onHelpClick={() => setShowHelp(true)}
+        onStatsClick={() => setShowStats(true)}
+        onSettingsClick={() => setShowSettings(true)}
+      />
+
+      <main className="flex-1 flex flex-col items-center justify-between px-4 py-4">
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-2 px-4 py-2 bg-error text-white rounded text-sm font-semibold">
+            {errorMessage}
+          </div>
+        )}
+
+        {/* Game Status */}
+        {gameState.gameStatus !== 'IN_PROGRESS' && (
+          <div className="mb-2 px-4 py-2 bg-primary text-text-dark rounded text-sm font-semibold">
+            {gameState.gameStatus === 'WON' ? '🎉 Congratulations!' : `Game Over! Answer: ${target}`}
+          </div>
+        )}
+
+        <GameBoard
+          guesses={gameState.guesses}
+          currentGuess={currentGuess}
+          target={target}
+          maxGuesses={MAX_GUESSES}
+          isInvalidGuess={isInvalidGuess}
+        />
+
+        <Keyboard
+          onKeyPress={handleKeyPress}
+          keyFeedback={keyFeedback}
+          disabled={gameState.gameStatus !== 'IN_PROGRESS'}
+        />
+      </main>
+
+      {/* Modals */}
+      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
+      <StatsModal
+        isOpen={showStats}
+        onClose={() => setShowStats(false)}
+        statistics={statistics}
+        shareText={shareText}
+      />
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        settings={settings}
+        onSettingsChange={handleSettingsChange}
+      />
+    </div>
+  );
+}
