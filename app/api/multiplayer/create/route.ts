@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       gameStatus: 'IN_PROGRESS',
     };
 
-    createSession(session);
+    await createSession(session);
 
     return NextResponse.json({ sessionId, session });
   } catch (error) {

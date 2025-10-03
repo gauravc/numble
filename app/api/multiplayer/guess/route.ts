@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session ID, Player ID, and guess are required' }, { status: 400 });
     }
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     };
 
-    const updatedSession = addGuessToSession(sessionId, multiplayerGuess);
+    const updatedSession = await addGuessToSession(sessionId, multiplayerGuess);
     if (!updatedSession) {
       return NextResponse.json({ error: 'Failed to add guess' }, { status: 500 });
     }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     // Toggle turn
     const nextTurn = session.currentTurn === 'creator' ? 'opponent' : 'creator';
 
-    const finalSession = updateSession(sessionId, {
+    const finalSession = await updateSession(sessionId, {
       currentTurn: nextTurn,
       gameStatus,
       winnerId,

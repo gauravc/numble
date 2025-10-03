@@ -1,47 +1,58 @@
+import { kv } from '@vercel/kv';
 import { MultiplayerSession, MultiplayerGuess } from '@/types';
 
-// Simple in-memory storage for development
-// In production, this would be replaced with a real database like Vercel KV or MongoDB
-let sessions: Map<string, MultiplayerSession> = new Map();
+const SESSION_PREFIX = 'session:';
+const SESSION_TTL = 60 * 60 * 24; // 24 hours in seconds
 
-export function createSession(session: MultiplayerSession): void {
-  sessions.set(session.id, session);
+export async function createSession(session: MultiplayerSession): Promise<void> {
+  await kv.set(`${SESSION_PREFIX}${session.id}`, JSON.stringify(session), { ex: SESSION_TTL });
 }
 
-export function getSession(sessionId: string): MultiplayerSession | null {
-  return sessions.get(sessionId) || null;
+export async function getSession(sessionId: string): Promise<MultiplayerSession | null> {
+  const data = await kv.get<string>(`${SESSION_PREFIX}${sessionId}`);
+  if (!data) return null;
+  return JSON.parse(data);
 }
 
-export function updateSession(sessionId: string, updates: Partial<MultiplayerSession>): MultiplayerSession | null {
-  const session = sessions.get(sessionId);
+export async function updateSession(
+  sessionId: string,
+  updates: Partial<MultiplayerSession>
+): Promise<MultiplayerSession | null> {
+  const session = await getSession(sessionId);
   if (!session) return null;
 
   const updatedSession = { ...session, ...updates };
-  sessions.set(sessionId, updatedSession);
+  await kv.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { ex: SESSION_TTL });
   return updatedSession;
 }
 
-export function addGuessToSession(sessionId: string, guess: MultiplayerGuess): MultiplayerSession | null {
-  const session = sessions.get(sessionId);
+export async function addGuessToSession(
+  sessionId: string,
+  guess: MultiplayerGuess
+): Promise<MultiplayerSession | null> {
+  const session = await getSession(sessionId);
   if (!session) return null;
 
   const updatedSession = {
     ...session,
     guesses: [...session.guesses, guess],
   };
-  sessions.set(sessionId, updatedSession);
+  await kv.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { ex: SESSION_TTL });
   return updatedSession;
 }
 
-export function joinSession(sessionId: string, opponentId: string): MultiplayerSession | null {
-  const session = sessions.get(sessionId);
+export async function joinSession(
+  sessionId: string,
+  opponentId: string
+): Promise<MultiplayerSession | null> {
+  const session = await getSession(sessionId);
   if (!session || session.opponentId) return null; // Already has opponent
 
   const updatedSession = {
     ...session,
     opponentId,
   };
-  sessions.set(sessionId, updatedSession);
+  await kv.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { ex: SESSION_TTL });
   return updatedSession;
 }
 

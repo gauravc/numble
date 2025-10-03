@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session ID and Player ID are required' }, { status: 400 });
     }
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Cannot join your own session' }, { status: 400 });
     }
 
-    const updatedSession = joinSession(sessionId, playerId);
+    const updatedSession = await joinSession(sessionId, playerId);
 
     return NextResponse.json({ session: updatedSession });
   } catch (error) {
