@@ -221,7 +221,7 @@ export default function Home() {
         onSettingsClick={() => setShowSettings(true)}
       />
 
-      <main className="flex-1 flex flex-col items-center justify-between px-4 py-4">
+      <main className="flex-1 flex flex-col items-center justify-between px-1 sm:px-4 py-4">
         {/* Error Message */}
         {errorMessage && (
           <div className="mb-2 px-4 py-2 bg-error text-white rounded text-sm font-semibold">

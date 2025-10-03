@@ -62,7 +62,7 @@ export default function GameBoard({
       <div
         key={rowIndex}
         className={`
-          flex gap-1 sm:gap-2 justify-center mb-2
+          flex gap-0.5 xs:gap-1 sm:gap-2 justify-center mb-2
           ${isInvalidGuess && isCurrentRow ? 'animate-shake' : ''}
         `}
       >

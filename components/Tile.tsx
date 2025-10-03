@@ -61,9 +61,9 @@ export default function Tile({
   return (
     <div
       className={`
-        w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14
+        w-6 h-10 xs:w-8 xs:h-11 sm:w-12 sm:h-12 md:w-14 md:h-14
         flex items-center justify-center
-        font-bold text-lg sm:text-xl md:text-2xl
+        font-bold text-sm xs:text-base sm:text-xl md:text-2xl
         text-text-dark
         ${getFeedbackClass()}
         ${getBorderClass()}
