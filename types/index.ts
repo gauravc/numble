@@ -6,6 +6,8 @@ export type CellState = 'empty' | 'tbd' | 'correct' | 'present' | 'absent';
 
 export type GameStatus = 'IN_PROGRESS' | 'WON' | 'LOST';
 
+export type GameMode = 'solo' | 'multiplayer';
+
 export type Theme = 'light' | 'dark';
 
 export interface GameState {
@@ -13,6 +15,27 @@ export interface GameState {
   guesses: string[];
   gameStatus: GameStatus;
   lastPlayed: string; // ISO date string
+  mode?: GameMode;
+  sessionId?: string;
+}
+
+export interface MultiplayerSession {
+  id: string;
+  puzzleNumber: number;
+  puzzle: string;
+  createdAt: string;
+  creatorId: string;
+  opponentId?: string;
+  currentTurn: 'creator' | 'opponent';
+  guesses: MultiplayerGuess[];
+  gameStatus: GameStatus;
+  winnerId?: string;
+}
+
+export interface MultiplayerGuess {
+  playerId: string;
+  guess: string;
+  timestamp: string;
 }
 
 export interface Statistics {

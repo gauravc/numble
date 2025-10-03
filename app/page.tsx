@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import GameBoard from '@/components/GameBoard';
 import Keyboard from '@/components/Keyboard';
 import HelpModal from '@/components/HelpModal';
 import StatsModal from '@/components/StatsModal';
 import SettingsModal from '@/components/SettingsModal';
-import { GameState, GameStatus, Statistics, Settings, FeedbackColor } from '@/types';
+import GameModeModal from '@/components/GameModeModal';
+import InviteModal from '@/components/InviteModal';
+import MultiplayerGame from '@/components/MultiplayerGame';
+import { GameState, GameStatus, Statistics, Settings, MultiplayerSession } from '@/types';
 import { getTodaysPuzzle, getPuzzleNumber } from '@/lib/puzzle';
 import { isMathematicallyValid, getValidationError } from '@/lib/validation';
 import {
@@ -26,11 +30,17 @@ import {
   getKeyboardFeedback,
   generateShareText,
 } from '@/lib/game';
+import {
+  createMultiplayerSession,
+  joinMultiplayerSession,
+  generatePlayerId,
+} from '@/lib/multiplayerGame';
 
 const MAX_GUESSES = 6;
 const MAX_EQUATION_LENGTH = 13;
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [target, setTarget] = useState('');
   const [puzzleNumber, setPuzzleNumber] = useState(0);
@@ -46,6 +56,12 @@ export default function Home() {
   const [isInvalidGuess, setIsInvalidGuess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Multiplayer states
+  const [multiplayerSession, setMultiplayerSession] = useState<MultiplayerSession | null>(null);
+  const [playerId] = useState<string>(() => generatePlayerId());
+  const [showGameMode, setShowGameMode] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+
   // Modal states
   const [showHelp, setShowHelp] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -60,19 +76,30 @@ export default function Home() {
     setTarget(todaysPuzzle);
     setPuzzleNumber(todaysPuzzleNumber);
 
+    // Check if joining a multiplayer session
+    const sessionId = searchParams.get('session');
+    if (sessionId) {
+      joinMultiplayerSession(sessionId, playerId).then((result) => {
+        if (result?.session) {
+          setMultiplayerSession(result.session);
+        } else {
+          setErrorMessage('Failed to join session');
+        }
+      });
+      return;
+    }
+
     const savedState = loadGameState();
 
-    if (savedState && !shouldResetGame(todaysPuzzleNumber, savedState.currentPuzzleNumber)) {
+    // Check if there's an existing multiplayer session
+    if (savedState?.mode === 'multiplayer' && savedState.sessionId) {
+      // TODO: Restore multiplayer session
+      setShowGameMode(true);
+    } else if (savedState && !shouldResetGame(todaysPuzzleNumber, savedState.currentPuzzleNumber)) {
       setGameState(savedState);
     } else {
-      const newState: GameState = {
-        currentPuzzleNumber: todaysPuzzleNumber,
-        guesses: [],
-        gameStatus: 'IN_PROGRESS',
-        lastPlayed: new Date().toISOString(),
-      };
-      setGameState(newState);
-      saveGameState(newState);
+      // Show game mode selection for new game
+      setShowGameMode(true);
     }
 
     // Show help modal for first-time users
@@ -80,7 +107,7 @@ export default function Home() {
       setShowHelp(true);
       setFirstTimeUserComplete();
     }
-  }, []);
+  }, [searchParams, playerId]);
 
   // Apply theme
   useEffect(() => {
@@ -194,6 +221,31 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyPress, showHelp, showStats, showSettings]);
 
+  // Handle game mode selection
+  const handleSelectSolo = () => {
+    setShowGameMode(false);
+    const newState: GameState = {
+      currentPuzzleNumber: puzzleNumber,
+      guesses: [],
+      gameStatus: 'IN_PROGRESS',
+      lastPlayed: new Date().toISOString(),
+      mode: 'solo',
+    };
+    setGameState(newState);
+    saveGameState(newState);
+  };
+
+  const handleSelectMultiplayer = async () => {
+    setShowGameMode(false);
+    const result = await createMultiplayerSession(playerId);
+    if (result) {
+      setMultiplayerSession(result.session);
+      setShowInvite(true);
+    } else {
+      setErrorMessage('Failed to create multiplayer session');
+    }
+  };
+
   // Handle settings change
   const handleSettingsChange = (newSettings: Settings) => {
     setSettings(newSettings);
@@ -222,36 +274,57 @@ export default function Home() {
       />
 
       <main className="flex-1 flex flex-col items-center justify-between px-1 sm:px-4 py-4">
-        {/* Error Message */}
-        {errorMessage && (
-          <div className="mb-2 px-4 py-2 bg-error text-white rounded text-sm font-semibold">
-            {errorMessage}
-          </div>
+        {/* Render multiplayer or solo game */}
+        {multiplayerSession ? (
+          <MultiplayerGame initialSession={multiplayerSession} playerId={playerId} />
+        ) : (
+          <>
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="mb-2 px-4 py-2 bg-error text-white rounded text-sm font-semibold">
+                {errorMessage}
+              </div>
+            )}
+
+            {/* Game Status */}
+            {gameState.gameStatus !== 'IN_PROGRESS' && (
+              <div className="mb-2 px-4 py-2 bg-primary text-text-dark rounded text-sm font-semibold">
+                {gameState.gameStatus === 'WON' ? '🎉 Congratulations!' : `Game Over! Answer: ${target}`}
+              </div>
+            )}
+
+            <GameBoard
+              guesses={gameState.guesses}
+              currentGuess={currentGuess}
+              target={target}
+              maxGuesses={MAX_GUESSES}
+              isInvalidGuess={isInvalidGuess}
+            />
+
+            <Keyboard
+              onKeyPress={handleKeyPress}
+              keyFeedback={keyFeedback}
+              disabled={gameState.gameStatus !== 'IN_PROGRESS'}
+            />
+          </>
         )}
-
-        {/* Game Status */}
-        {gameState.gameStatus !== 'IN_PROGRESS' && (
-          <div className="mb-2 px-4 py-2 bg-primary text-text-dark rounded text-sm font-semibold">
-            {gameState.gameStatus === 'WON' ? '🎉 Congratulations!' : `Game Over! Answer: ${target}`}
-          </div>
-        )}
-
-        <GameBoard
-          guesses={gameState.guesses}
-          currentGuess={currentGuess}
-          target={target}
-          maxGuesses={MAX_GUESSES}
-          isInvalidGuess={isInvalidGuess}
-        />
-
-        <Keyboard
-          onKeyPress={handleKeyPress}
-          keyFeedback={keyFeedback}
-          disabled={gameState.gameStatus !== 'IN_PROGRESS'}
-        />
       </main>
 
       {/* Modals */}
+      <GameModeModal
+        isOpen={showGameMode}
+        onClose={() => setShowGameMode(false)}
+        onSelectSolo={handleSelectSolo}
+        onSelectMultiplayer={handleSelectMultiplayer}
+      />
+      {multiplayerSession && (
+        <InviteModal
+          isOpen={showInvite}
+          onClose={() => setShowInvite(false)}
+          sessionId={multiplayerSession.id}
+          onInviteSent={() => setShowInvite(false)}
+        />
+      )}
       <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
       <StatsModal
         isOpen={showStats}
@@ -266,5 +339,13 @@ export default function Home() {
         onSettingsChange={handleSettingsChange}
       />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

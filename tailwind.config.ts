@@ -35,7 +35,14 @@ const config: Config = {
           light: '#D3D6DA',
           dark: '#3A3A3C',
         },
-        primary: '#538D4E',
+        primary: {
+          DEFAULT: '#538D4E',
+          dark: '#3F6B39',
+        },
+        secondary: {
+          DEFAULT: '#3B82F6',
+          dark: '#2563EB',
+        },
         error: '#DC2626',
       },
       keyframes: {
