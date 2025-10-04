@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import GameBoard from '@/components/GameBoard';
@@ -343,9 +343,5 @@ function HomeContent() {
 }
 
 export default function Home() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-      <HomeContent />
-    </Suspense>
-  );
+  return <HomeContent />;
 }

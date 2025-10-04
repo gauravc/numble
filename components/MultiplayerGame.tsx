@@ -117,7 +117,6 @@ export default function MultiplayerGame({ initialSession, playerId }: Multiplaye
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyPress]);
 
-  const playerGuesses = getPlayerGuesses(session, playerId);
   const allGuesses = session.guesses.map(g => g.guess);
   const keyFeedback = getKeyboardFeedback(allGuesses, session.puzzle);
 
@@ -159,19 +158,14 @@ export default function MultiplayerGame({ initialSession, playerId }: Multiplaye
         </div>
       )}
 
-      {/* Game Board */}
+      {/* Game Board - Shows all guesses from both players */}
       <GameBoard
-        guesses={playerGuesses}
+        guesses={allGuesses}
         currentGuess={isMyTurn ? currentGuess : ''}
         target={session.puzzle}
         maxGuesses={6}
         isInvalidGuess={isInvalidGuess}
       />
-
-      {/* Opponent's Progress */}
-      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Opponent: {session.guesses.filter(g => g.playerId !== playerId).length} guesses
-      </div>
 
       {/* Keyboard */}
       <Keyboard
