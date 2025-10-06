@@ -2,8 +2,8 @@ import { FeedbackColor } from '@/types';
 
 // Validate equation format: "NUM OP NUM = RESULT"
 export function isValidFormat(guess: string): boolean {
-  // Pattern: 1-2 digits, space, operator, space, 1-2 digits, space, =, space, 1-3 digits
-  const pattern = /^\d{1,2}\s[+\-*/]\s\d{1,2}\s=\s\d{1,3}$/;
+  // Pattern: 1-3 digits, space, operator, space, 1-3 digits, space, =, space, 1-3 digits
+  const pattern = /^\d{1,3}\s[+\-*/]\s\d{1,3}\s=\s\d{1,3}$/;
   return pattern.test(guess);
 }
 
@@ -18,8 +18,8 @@ export function isMathematicallyValid(guess: string): boolean {
   const result = parseInt(parts[4]);
 
   // Check number ranges
-  if (num1 < 0 || num1 > 99) return false;
-  if (num2 < 0 || num2 > 99) return false;
+  if (num1 < 0 || num1 > 999) return false;
+  if (num2 < 0 || num2 > 999) return false;
   if (result < 0 || result > 999) return false;
 
   let calculatedResult: number;
@@ -97,8 +97,8 @@ export function getValidationError(guess: string): string | null {
   const num2 = parseInt(parts[2]);
   const result = parseInt(parts[4]);
 
-  if (num1 < 0 || num1 > 99 || num2 < 0 || num2 > 99) {
-    return 'Numbers must be 0-99';
+  if (num1 < 0 || num1 > 999 || num2 < 0 || num2 > 999) {
+    return 'Numbers must be 0-999';
   }
 
   if (result < 0 || result > 999) {
