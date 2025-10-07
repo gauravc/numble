@@ -339,7 +339,7 @@ function HomeContent() {
           onInviteSent={() => setShowInvite(false)}
         />
       )}
-      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
+      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} colorBlindMode={settings.colorBlindMode} />
       <StatsModal
         isOpen={showStats}
         onClose={() => setShowStats(false)}

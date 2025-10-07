@@ -6,9 +6,10 @@ import Tile from './Tile';
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  colorBlindMode?: boolean;
 }
 
-export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
+export default function HelpModal({ isOpen, onClose, colorBlindMode = false }: HelpModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="How to Play">
       <div className="space-y-4">
@@ -33,24 +34,33 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
             <p className="text-sm">Guess: 23 + 11 = 34</p>
 
             <div className="flex gap-1 flex-wrap">
-              <Tile char="2" feedback="yellow" />
-              <Tile char="3" feedback="yellow" />
-              <Tile char="" feedback="default" />
-              <Tile char="+" feedback="green" />
-              <Tile char="" feedback="default" />
-              <Tile char="1" feedback="yellow" />
-              <Tile char="1" feedback="gray" />
-              <Tile char="" feedback="default" />
-              <Tile char="=" feedback="green" />
-              <Tile char="" feedback="default" />
-              <Tile char="3" feedback="yellow" />
-              <Tile char="4" feedback="yellow" />
+              <Tile char="2" feedback="yellow" colorBlindMode={colorBlindMode} />
+              <Tile char="3" feedback="yellow" colorBlindMode={colorBlindMode} />
+              <Tile char="" feedback="default" colorBlindMode={colorBlindMode} />
+              <Tile char="+" feedback="green" colorBlindMode={colorBlindMode} />
+              <Tile char="" feedback="default" colorBlindMode={colorBlindMode} />
+              <Tile char="1" feedback="yellow" colorBlindMode={colorBlindMode} />
+              <Tile char="1" feedback="gray" colorBlindMode={colorBlindMode} />
+              <Tile char="" feedback="default" colorBlindMode={colorBlindMode} />
+              <Tile char="=" feedback="green" colorBlindMode={colorBlindMode} />
+              <Tile char="" feedback="default" colorBlindMode={colorBlindMode} />
+              <Tile char="3" feedback="yellow" colorBlindMode={colorBlindMode} />
+              <Tile char="4" feedback="yellow" colorBlindMode={colorBlindMode} />
             </div>
 
             <ul className="text-xs space-y-1 ml-4">
-              <li>🟦 Navy blue = Correct character, correct position</li>
-              <li>🔵 Sky blue = Character exists, wrong position</li>
-              <li>⬛ Dark grey = Character not in equation</li>
+              <li className="flex items-center gap-2">
+                <span className={`inline-block w-4 h-4 rounded ${colorBlindMode ? 'bg-tile-green-cb' : 'bg-tile-green'}`}></span>
+                <span>{colorBlindMode ? 'Orange' : 'Navy blue'} = Correct character, correct position</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className={`inline-block w-4 h-4 rounded ${colorBlindMode ? 'bg-tile-yellow-cb' : 'bg-tile-yellow'}`}></span>
+                <span>{colorBlindMode ? 'Blue' : 'Sky blue'} = Character exists, wrong position</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="inline-block w-4 h-4 rounded bg-tile-gray-light"></span>
+                <span>Dark grey = Character not in equation</span>
+              </li>
             </ul>
           </div>
         </div>
