@@ -48,9 +48,9 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
             </div>
 
             <ul className="text-xs space-y-1 ml-4">
-              <li>🟩 Green = Correct character, correct position</li>
-              <li>🟨 Yellow = Character exists, wrong position</li>
-              <li>⬜ Gray = Character not in equation</li>
+              <li>🟦 Navy blue = Correct character, correct position</li>
+              <li>🔵 Sky blue = Character exists, wrong position</li>
+              <li>⬛ Dark grey = Character not in equation</li>
             </ul>
           </div>
         </div>
