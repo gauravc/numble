@@ -11,6 +11,7 @@ interface GameBoardProps {
   target: string;
   maxGuesses: number;
   isInvalidGuess: boolean;
+  colorBlindMode?: boolean;
 }
 
 const MAX_EQUATION_LENGTH = 13; // "99 + 99 = 999"
@@ -21,6 +22,7 @@ export default function GameBoard({
   target,
   maxGuesses,
   isInvalidGuess,
+  colorBlindMode = false,
 }: GameBoardProps) {
   const [revealingRow, setRevealingRow] = useState<number | null>(null);
 
@@ -74,6 +76,7 @@ export default function GameBoard({
             isRevealing={isRevealing}
             revealDelay={charIndex * 100}
             isPop={isCurrentRow && charIndex === currentGuess.length - 1}
+            colorBlindMode={colorBlindMode}
           />
         ))}
       </div>

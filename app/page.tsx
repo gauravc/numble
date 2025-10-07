@@ -29,6 +29,7 @@ import {
   shouldResetGame,
   getKeyboardFeedback,
   generateShareText,
+  validateHardMode,
 } from '@/lib/game';
 import {
   createMultiplayerSession,
@@ -148,6 +149,17 @@ function HomeContent() {
           setIsInvalidGuess(true);
           setTimeout(() => setIsInvalidGuess(false), 500);
           return;
+        }
+
+        // Check hard mode constraints
+        if (settings.hardMode) {
+          const hardModeError = validateHardMode(currentGuess, gameState.guesses, target);
+          if (hardModeError) {
+            setErrorMessage(hardModeError);
+            setIsInvalidGuess(true);
+            setTimeout(() => setIsInvalidGuess(false), 500);
+            return;
+          }
         }
 
         // Valid guess - add to guesses
@@ -276,7 +288,7 @@ function HomeContent() {
       <main className="flex-1 flex flex-col items-center justify-between px-1 sm:px-4 py-4">
         {/* Render multiplayer or solo game */}
         {multiplayerSession ? (
-          <MultiplayerGame initialSession={multiplayerSession} playerId={playerId} />
+          <MultiplayerGame initialSession={multiplayerSession} playerId={playerId} colorBlindMode={settings.colorBlindMode} />
         ) : (
           <>
             {/* Error Message */}
@@ -299,12 +311,14 @@ function HomeContent() {
               target={target}
               maxGuesses={MAX_GUESSES}
               isInvalidGuess={isInvalidGuess}
+              colorBlindMode={settings.colorBlindMode}
             />
 
             <Keyboard
               onKeyPress={handleKeyPress}
               keyFeedback={keyFeedback}
               disabled={gameState.gameStatus !== 'IN_PROGRESS'}
+              colorBlindMode={settings.colorBlindMode}
             />
           </>
         )}

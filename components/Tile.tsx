@@ -9,6 +9,7 @@ interface TileProps {
   isRevealing?: boolean;
   revealDelay?: number;
   isPop?: boolean;
+  colorBlindMode?: boolean;
 }
 
 export default function Tile({
@@ -17,6 +18,7 @@ export default function Tile({
   isRevealing = false,
   revealDelay = 0,
   isPop = false,
+  colorBlindMode = false,
 }: TileProps) {
   const [shouldReveal, setShouldReveal] = useState(false);
 
@@ -36,18 +38,18 @@ export default function Tile({
     const showFeedback = !isRevealing || shouldReveal;
 
     if (!showFeedback && feedback !== 'default') {
-      return 'bg-tile-default-light dark:bg-tile-default-dark';
+      return 'bg-tile-default-light';
     }
 
     switch (feedback) {
       case 'green':
-        return 'bg-tile-green';
+        return colorBlindMode ? 'bg-tile-green-cb' : 'bg-tile-green';
       case 'yellow':
-        return 'bg-tile-yellow';
+        return colorBlindMode ? 'bg-tile-yellow-cb' : 'bg-tile-yellow';
       case 'gray':
-        return 'bg-tile-gray-light dark:bg-tile-gray-dark';
+        return 'bg-tile-gray-light';
       default:
-        return 'bg-tile-default-light dark:bg-tile-default-dark';
+        return 'bg-tile-default-light';
     }
   };
 

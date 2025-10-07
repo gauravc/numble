@@ -120,6 +120,49 @@ export function generateShareText(
   return shareText.trim();
 }
 
+// Validate hard mode constraints
+export function validateHardMode(
+  currentGuess: string,
+  previousGuesses: string[],
+  target: string
+): string | null {
+  if (previousGuesses.length === 0) {
+    return null; // First guess has no constraints
+  }
+
+  // Get all green letters from previous guesses (correct position)
+  const greenConstraints = new Map<number, string>();
+  // Get all yellow letters from previous guesses (wrong position but in target)
+  const yellowLetters = new Set<string>();
+
+  previousGuesses.forEach((guess) => {
+    const feedback = generateFeedback(guess, target);
+    guess.split('').forEach((char, index) => {
+      if (feedback[index] === 'green') {
+        greenConstraints.set(index, char);
+      } else if (feedback[index] === 'yellow') {
+        yellowLetters.add(char);
+      }
+    });
+  });
+
+  // Check green constraints - must use revealed green letters in same position
+  for (const [position, char] of greenConstraints.entries()) {
+    if (currentGuess[position] !== char) {
+      return `Must use ${char} in position ${position + 1}`;
+    }
+  }
+
+  // Check yellow constraints - must use revealed yellow letters somewhere
+  for (const char of yellowLetters) {
+    if (!currentGuess.includes(char)) {
+      return `Must include ${char} in your guess`;
+    }
+  }
+
+  return null; // Valid
+}
+
 // Copy to clipboard
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {

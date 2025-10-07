@@ -2,7 +2,6 @@ import { createClient } from 'redis';
 import { MultiplayerSession, MultiplayerGuess } from '@/types';
 
 const SESSION_PREFIX = 'session:';
-const SESSION_TTL = 60 * 60 * 24; // 24 hours in seconds
 
 let redis: ReturnType<typeof createClient> | null = null;
 
@@ -16,9 +15,26 @@ async function getRedisClient() {
   return redis;
 }
 
+// Calculate seconds until midnight Pacific Time
+function getSecondsUntilMidnightPT(): number {
+  const now = new Date();
+
+  // Create a date object for midnight Pacific Time
+  const midnightPT = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  midnightPT.setHours(24, 0, 0, 0); // Next midnight
+
+  // Convert back to UTC for comparison
+  const nowUTC = now.getTime();
+  const midnightPTUTC = new Date(midnightPT.toLocaleString('en-US', { timeZone: 'UTC' })).getTime();
+
+  const diff = midnightPTUTC - nowUTC;
+  return Math.max(Math.floor(diff / 1000), 60); // At least 60 seconds
+}
+
 export async function createSession(session: MultiplayerSession): Promise<void> {
   const client = await getRedisClient();
-  await client.set(`${SESSION_PREFIX}${session.id}`, JSON.stringify(session), { EX: SESSION_TTL });
+  const ttl = getSecondsUntilMidnightPT();
+  await client.set(`${SESSION_PREFIX}${session.id}`, JSON.stringify(session), { EX: ttl });
 }
 
 export async function getSession(sessionId: string): Promise<MultiplayerSession | null> {
@@ -37,7 +53,8 @@ export async function updateSession(
 
   const updatedSession = { ...session, ...updates };
   const client = await getRedisClient();
-  await client.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { EX: SESSION_TTL });
+  const ttl = getSecondsUntilMidnightPT();
+  await client.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { EX: ttl });
   return updatedSession;
 }
 
@@ -53,7 +70,8 @@ export async function addGuessToSession(
     guesses: [...session.guesses, guess],
   };
   const client = await getRedisClient();
-  await client.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { EX: SESSION_TTL });
+  const ttl = getSecondsUntilMidnightPT();
+  await client.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { EX: ttl });
   return updatedSession;
 }
 
@@ -69,7 +87,8 @@ export async function joinSession(
     opponentId,
   };
   const client = await getRedisClient();
-  await client.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { EX: SESSION_TTL });
+  const ttl = getSecondsUntilMidnightPT();
+  await client.set(`${SESSION_PREFIX}${sessionId}`, JSON.stringify(updatedSession), { EX: ttl });
   return updatedSession;
 }
 

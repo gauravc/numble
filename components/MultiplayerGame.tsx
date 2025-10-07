@@ -20,9 +20,10 @@ const POLL_INTERVAL = 3000; // Poll every 3 seconds
 interface MultiplayerGameProps {
   initialSession: MultiplayerSession;
   playerId: string;
+  colorBlindMode?: boolean;
 }
 
-export default function MultiplayerGame({ initialSession, playerId }: MultiplayerGameProps) {
+export default function MultiplayerGame({ initialSession, playerId, colorBlindMode = false }: MultiplayerGameProps) {
   const [session, setSession] = useState<MultiplayerSession>(initialSession);
   const [currentGuess, setCurrentGuess] = useState('');
   const [isInvalidGuess, setIsInvalidGuess] = useState(false);
@@ -165,6 +166,7 @@ export default function MultiplayerGame({ initialSession, playerId }: Multiplaye
         target={session.puzzle}
         maxGuesses={6}
         isInvalidGuess={isInvalidGuess}
+        colorBlindMode={colorBlindMode}
       />
 
       {/* Keyboard */}
@@ -172,6 +174,7 @@ export default function MultiplayerGame({ initialSession, playerId }: Multiplaye
         onKeyPress={handleKeyPress}
         keyFeedback={keyFeedback}
         disabled={session.gameStatus !== 'IN_PROGRESS' || !isMyTurn || waitingForOpponent}
+        colorBlindMode={colorBlindMode}
       />
     </div>
   );

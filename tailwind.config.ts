@@ -20,24 +20,28 @@ const config: Config = {
         },
         tile: {
           default: {
-            light: '#D3D6DA',
-            dark: '#3A3A3C',
+            light: '#E5E7EB', // Light grey (unguessed)
+            dark: '#E5E7EB',
           },
-          green: '#538D4E',
-          yellow: '#B59F3B',
+          green: '#1E3A8A', // Navy blue (correct position)
+          yellow: '#0EA5E9', // Sky blue (wrong position)
           gray: {
-            light: '#787C7E',
-            dark: '#3A3A3C',
+            light: '#4B5563', // Dark grey (incorrect)
+            dark: '#4B5563',
           },
+          // Color blind mode colors
+          'green-cb': '#F97316', // Orange (correct position)
+          'yellow-cb': '#3B82F6', // Blue (wrong position)
         },
-        keyboard: '#818384',
+        keyboard: '#9CA3AF',
+        'keyboard-disabled': '#6B7280', // Darkish grey for disabled state
         border: {
           light: '#D3D6DA',
           dark: '#3A3A3C',
         },
         primary: {
-          DEFAULT: '#538D4E',
-          dark: '#3F6B39',
+          DEFAULT: '#1E3A8A',
+          dark: '#1E40AF',
         },
         secondary: {
           DEFAULT: '#3B82F6',
