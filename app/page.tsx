@@ -278,14 +278,14 @@ function HomeContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
       <Header
         onHelpClick={() => setShowHelp(true)}
         onStatsClick={() => setShowStats(true)}
         onSettingsClick={() => setShowSettings(true)}
       />
 
-      <main className="flex-1 flex flex-col items-center justify-between px-1 sm:px-4 py-4">
+      <main className="flex-1 flex flex-col items-center justify-between px-1 sm:px-4 py-2 sm:py-4 max-w-full">
         {/* Render multiplayer or solo game */}
         {multiplayerSession ? (
           <MultiplayerGame initialSession={multiplayerSession} playerId={playerId} colorBlindMode={settings.colorBlindMode} />
@@ -293,14 +293,14 @@ function HomeContent() {
           <>
             {/* Error Message */}
             {errorMessage && (
-              <div className="mb-2 px-4 py-2 bg-error text-white rounded text-sm font-semibold">
+              <div className="mb-2 mx-2 px-3 xs:px-4 py-2 bg-error text-white rounded text-xs xs:text-sm font-semibold text-center max-w-full">
                 {errorMessage}
               </div>
             )}
 
             {/* Game Status */}
             {gameState.gameStatus !== 'IN_PROGRESS' && (
-              <div className="mb-2 px-4 py-2 bg-primary text-text-dark rounded text-sm font-semibold">
+              <div className="mb-2 mx-2 px-3 xs:px-4 py-2 bg-primary text-white rounded text-xs xs:text-sm font-semibold text-center max-w-full">
                 {gameState.gameStatus === 'WON' ? '🎉 Congratulations!' : `Game Over! Answer: ${target}`}
               </div>
             )}

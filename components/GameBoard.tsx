@@ -64,7 +64,7 @@ export default function GameBoard({
       <div
         key={rowIndex}
         className={`
-          flex gap-0.5 xs:gap-1 sm:gap-2 justify-center mb-2
+          flex gap-0.5 xs:gap-1 sm:gap-2 justify-center mb-1 sm:mb-2
           ${isInvalidGuess && isCurrentRow ? 'animate-shake' : ''}
         `}
       >
@@ -84,7 +84,7 @@ export default function GameBoard({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-4">
+    <div className="flex flex-col items-center justify-center py-2 sm:py-4 w-full max-w-2xl mx-auto px-2">
       {Array.from({ length: maxGuesses }, (_, i) => renderRow(i))}
     </div>
   );

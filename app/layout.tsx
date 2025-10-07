@@ -17,7 +17,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#538D4E',
+  userScalable: false,
+  themeColor: '#10B981',
 };
 
 export default function RootLayout({
@@ -31,7 +32,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" href="/favicon.png" />
       </head>
-      <body>{children}</body>
+      <body className="overflow-x-hidden">{children}<Analytics /></body>
     </html>
   );
 }

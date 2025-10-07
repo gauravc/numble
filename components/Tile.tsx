@@ -55,24 +55,38 @@ export default function Tile({
 
   const getBorderClass = () => {
     if (char && feedback === 'default') {
-      return 'border-2 border-text-light dark:border-text-dark';
+      return 'border-2 border-gray-400';
     }
-    return 'border-2 border-border-light dark:border-border-dark';
+    if (feedback === 'default') {
+      return 'border-2 border-border-light';
+    }
+    return 'border-0';
+  };
+
+  const getTextColor = () => {
+    if (feedback === 'default') {
+      return 'text-gray-800'; // Dark text for unguessed tiles (visible on white background)
+    }
+    if (feedback === 'gray') {
+      return 'text-white'; // White text for gray (incorrect) tiles
+    }
+    return 'text-white'; // White text for colored tiles (green/amber)
   };
 
   return (
     <div
       className={`
-        w-6 h-10 xs:w-8 xs:h-11 sm:w-12 sm:h-12 md:w-14 md:h-14
+        w-5 h-8 xs:w-7 xs:h-10 sm:w-11 sm:h-11 md:w-14 md:h-14
         flex items-center justify-center
-        font-bold text-sm xs:text-base sm:text-xl md:text-2xl
-        text-text-dark
+        font-bold text-xs xs:text-sm sm:text-lg md:text-2xl
+        ${getTextColor()}
         ${getFeedbackClass()}
         ${getBorderClass()}
-        rounded
+        rounded sm:rounded-lg
         transition-all duration-100
         ${shouldReveal ? 'animate-flip' : ''}
         ${isPop ? 'animate-pop' : ''}
+        shadow-sm
       `}
       style={{
         animationDelay: shouldReveal ? `${revealDelay}ms` : '0ms',

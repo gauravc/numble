@@ -82,6 +82,11 @@ export function getPlayerGuesses(session: MultiplayerSession, playerId: string):
 }
 
 export function generatePlayerId(): string {
+  // Check if we're in browser environment
+  if (typeof window === 'undefined') {
+    return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+  }
+
   const stored = localStorage.getItem('numble_player_id');
   if (stored) return stored;
 

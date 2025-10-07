@@ -51,15 +51,15 @@ export default function HelpModal({ isOpen, onClose, colorBlindMode = false }: H
             <ul className="text-xs space-y-1 ml-4">
               <li className="flex items-center gap-2">
                 <span className={`inline-block w-4 h-4 rounded ${colorBlindMode ? 'bg-tile-green-cb' : 'bg-tile-green'}`}></span>
-                <span>{colorBlindMode ? 'Orange' : 'Navy blue'} = Correct character, correct position</span>
+                <span>{colorBlindMode ? 'Blue' : 'Green'} = Correct character, correct position</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className={`inline-block w-4 h-4 rounded ${colorBlindMode ? 'bg-tile-yellow-cb' : 'bg-tile-yellow'}`}></span>
-                <span>{colorBlindMode ? 'Blue' : 'Sky blue'} = Character exists, wrong position</span>
+                <span>{colorBlindMode ? 'Orange' : 'Amber'} = Character exists, wrong position</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="inline-block w-4 h-4 rounded bg-tile-gray-light"></span>
-                <span>Dark grey = Character not in equation</span>
+                <span>Gray = Character not in equation</span>
               </li>
             </ul>
           </div>

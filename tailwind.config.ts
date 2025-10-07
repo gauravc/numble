@@ -9,45 +9,49 @@ const config: Config = {
   darkMode: 'class',
   theme: {
     extend: {
+      screens: {
+        'xs': '375px',
+        'fold': '280px', // Samsung Fold and very narrow screens
+      },
       colors: {
         background: {
-          light: '#FFFFFF',
-          dark: '#121213',
+          light: '#FAFAFA',
+          dark: '#1A1A1B',
         },
         text: {
-          light: '#000000',
-          dark: '#FFFFFF',
+          light: '#1F2937',
+          dark: '#F9FAFB',
         },
         tile: {
           default: {
-            light: '#E5E7EB', // Light grey (unguessed)
-            dark: '#E5E7EB',
+            light: '#FFFFFF', // White (unguessed)
+            dark: '#FFFFFF',
           },
-          green: '#1E3A8A', // Navy blue (correct position)
-          yellow: '#0EA5E9', // Sky blue (wrong position)
+          green: '#10B981', // Emerald green (correct position)
+          yellow: '#F59E0B', // Amber (wrong position)
           gray: {
-            light: '#4B5563', // Dark grey (incorrect)
-            dark: '#4B5563',
+            light: '#6B7280', // Gray (incorrect)
+            dark: '#6B7280',
           },
           // Color blind mode colors
-          'green-cb': '#F97316', // Orange (correct position)
-          'yellow-cb': '#3B82F6', // Blue (wrong position)
+          'green-cb': '#3B82F6', // Blue (correct position)
+          'yellow-cb': '#F97316', // Orange (wrong position)
         },
-        keyboard: '#9CA3AF',
-        'keyboard-disabled': '#6B7280', // Darkish grey for disabled state
+        keyboard: '#D1D5DB',
+        'keyboard-disabled': '#9CA3AF', // Lighter grey for disabled state
         border: {
-          light: '#D3D6DA',
-          dark: '#3A3A3C',
+          light: '#E5E7EB',
+          dark: '#374151',
         },
         primary: {
-          DEFAULT: '#1E3A8A',
-          dark: '#1E40AF',
+          DEFAULT: '#10B981',
+          dark: '#059669',
         },
         secondary: {
           DEFAULT: '#3B82F6',
           dark: '#2563EB',
         },
-        error: '#DC2626',
+        error: '#EF4444',
       },
       keyframes: {
         flip: {
